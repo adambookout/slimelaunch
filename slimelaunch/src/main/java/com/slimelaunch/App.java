@@ -5,6 +5,8 @@ public class App extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("Hello, SpigotMC!");
+
+        getServer().getPluginManager().registerEvents(new LaunchpadListeners(), this);
     }
     @Override
     public void onDisable() {
