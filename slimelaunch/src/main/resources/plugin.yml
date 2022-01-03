@@ -1,3 +1,4 @@
 main: com.slimelaunch.App
 name: Slimelaunch
 version: 1.0
+api-version: 1.18
