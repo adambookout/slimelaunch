@@ -1,7 +1,12 @@
 # Strength multipliers for different mineral block types
 block-multipliers:
-  COPPER_BLOCK: 0.25
+  COPPER_BLOCK: 0.1
   IRON_BLOCK: 0.5
   GOLD_BLOCK: 0.75
-  DIAMOND_BLOCK: 1
-  EMERALD_BLOCK: 1.5
+  DIAMOND_BLOCK: 1.5
+  EMERALD_BLOCK: 3.0
+
+# Modifies the influence that the number of blocks in a launchpad has on the
+# launch strength. Has an exponential relationship:
+# (number of blocks)^(block-count-factor)
+block-count-factor: 0.5

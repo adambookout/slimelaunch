@@ -2,3 +2,13 @@ main: com.slimelaunch.Launchpad
 name: Slimelaunch
 version: 1.0
 api-version: 1.18
+
+commands:
+  setconfig:
+    description: Set a value in the config file
+    usage: /setconfig <key> <value>
+    permission: op
+  getconfig:
+    description: Show list of all key value pairs in config file
+    usage: /getconfig
+    permission: op
