@@ -22,13 +22,12 @@ public class LaunchpadListeners implements Listener {
 
     Block blockAtFeet = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
     Launchpad plugin = Launchpad.instance;
-    if (!plugin.isLaunchpad(blockAtFeet))
+    if (!plugin.isLaunchpad(blockAtFeet) || !plugin.checkCanLaunch(player))
       return;
 
     Vector launchVector = plugin.getLaunchVector(blockAtFeet);
     if (launchVector != null) {
-      event.getPlayer().sendMessage("Launching " + launchVector);
-      player.setVelocity(launchVector);
+      plugin.launchPlayer(player, launchVector);
     }
   }
 }

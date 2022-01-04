@@ -10,3 +10,9 @@ block-multipliers:
 # launch strength. Has an exponential relationship:
 # (number of blocks)^(block-count-factor)
 block-count-factor: 0.5
+
+# Cooldown between launches, in seconds
+launch-cooldown: 1.0
+
+# Duration after launch that gravity should not affect the player, in seconds
+zero-gravity-duration: 2.0

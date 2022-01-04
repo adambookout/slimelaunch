@@ -6,7 +6,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 
 public class CommandSetConfig implements CommandExecutor {
 
@@ -21,19 +20,13 @@ public class CommandSetConfig implements CommandExecutor {
    */
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if (!(sender instanceof Player)) {
-      sender.sendMessage("setconfig is only usable by players.");
-      return false;
-    }
-
-    Player player = (Player) sender;
-    if (!player.isOp()) {
-      player.sendMessage("Insufficient permissions.");
+    if (!sender.isOp()) {
+      sender.sendMessage("Insufficient permissions.");
       return false;
     }
 
     if (args.length != 2) {
-      player.sendMessage("Invalid arguments: " + args.toString());
+      sender.sendMessage("Invalid arguments: " + args.toString());
       return false;
     }
 
@@ -41,10 +34,10 @@ public class CommandSetConfig implements CommandExecutor {
     try {
       double doubleVal = Double.parseDouble(args[1]);
       config.set(args[0], doubleVal);
-      player.sendMessage("Set config value \"" + args[0] + "\" to " + doubleVal);
+      sender.sendMessage("Set config value \"" + args[0] + "\" to " + doubleVal);
     } catch (NumberFormatException error) {
       config.set(args[0], args[1]);
-      player.sendMessage("Set config value \"" + args[0] + "\" to " + args[1]);
+      sender.sendMessage("Set config value \"" + args[0] + "\" to " + args[1]);
     }
 
     // Return true if the player used this command correctly
