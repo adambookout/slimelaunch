@@ -1,0 +1,7 @@
+# Strength multipliers for different mineral block types
+block-multipliers:
+  COPPER_BLOCK: 0.25
+  IRON_BLOCK: 0.5
+  GOLD_BLOCK: 0.75
+  DIAMOND_BLOCK: 1
+  EMERALD_BLOCK: 1.5

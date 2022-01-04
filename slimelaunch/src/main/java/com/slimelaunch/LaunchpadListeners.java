@@ -1,6 +1,5 @@
 package com.slimelaunch;
 
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -20,21 +19,19 @@ public class LaunchpadListeners implements Listener {
   @EventHandler
   public void onPlayerMove(PlayerMoveEvent event) {
     // Check if player stepped on the launchpad, and launch them if they did
-    event.getPlayer().sendMessage("on player move");
-
     Player player = event.getPlayer();
-    Block block = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
-    if (checkLaunchpadStructure(block)) {
-      event.getPlayer().sendMessage("launchpad structure found at " + block.getLocation());
-      player.setVelocity(new Vector(0, 10, 0));
-    }
-  }
 
-  private boolean checkLaunchpadStructure(Block block) {
-    // TODO: check for complete structure
-    if (block.getType().equals(Material.SLIME_BLOCK)) {
-      return true;
-    }
-    return false;
+    // Don't launch player if sneaking
+    if (player.isSneaking() /* || player.isInsideVehicle() */)
+      return;
+
+    Block blockAtFeet = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+    Launchpad plugin = Launchpad.instance;
+    if (!plugin.isLaunchpad(blockAtFeet))
+      return;
+
+    Vector launchVector = plugin.getLaunchVector(blockAtFeet);
+    if (launchVector != null)
+      player.setVelocity(launchVector);
   }
 }
