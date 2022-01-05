@@ -4,7 +4,7 @@ block-multipliers:
   IRON_BLOCK: 0.5
   GOLD_BLOCK: 0.75
   DIAMOND_BLOCK: 1.5
-  EMERALD_BLOCK: 3.0
+  EMERALD_BLOCK: 2.0
 
 # Modifies the influence that the number of blocks in a launchpad has on the
 # launch strength. Has an exponential relationship:
@@ -14,5 +14,5 @@ block-count-factor: 0.5
 # Cooldown between launches, in seconds
 launch-cooldown: 1.0
 
-# Duration after launch that gravity should not affect the player, in seconds
-zero-gravity-duration: 2.0
+# Max launch vector magnitude
+max-launch-speed: 15.0

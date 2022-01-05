@@ -11,9 +11,9 @@ import com.slimelaunch.commands.CommandSetConfig;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class Launchpad extends JavaPlugin {
@@ -70,13 +70,10 @@ public class Launchpad extends JavaPlugin {
     }
 
     /**
-     * Get duration that the player's gravity should be disabled for after a
-     * launch.
-     * 
-     * @returns the duration in seconds
+     * @returns the maximum launch vector magnitude
      */
-    public double getZeroGravityDuration() {
-        return this.getConfig().getDouble("zero-gravity-duration", 0.0);
+    public double getMaxLaunchSpeed() {
+        return this.getConfig().getDouble("max-launch-speed", 0.0);
     }
 
     /**
@@ -107,21 +104,16 @@ public class Launchpad extends JavaPlugin {
     /**
      * Check if the given player is able to launch, based on how long it's been
      * since their last launch.
-     * 
-     * @param player
      */
     public boolean checkCanLaunch(Player player) {
         Long playerLastLaunchTime = playersLastLaunched.get(player.getUniqueId());
 
-        if (playerLastLaunchTime == null)
+        if (playerLastLaunchTime == null) {
             return true;
+        }
 
         Long timeElapsed = System.currentTimeMillis() - playerLastLaunchTime;
-        var toReturn = TimeUnit.MILLISECONDS.toSeconds(timeElapsed) >= this.getLaunchCooldown();
-
-        player.sendMessage("Can launch? " + toReturn + "; " + TimeUnit.MILLISECONDS.toSeconds(timeElapsed) + " >= "
-                + this.getLaunchCooldown());
-        return toReturn;
+        return TimeUnit.MILLISECONDS.toSeconds(timeElapsed) >= this.getLaunchCooldown();
     }
 
     /**
@@ -162,19 +154,13 @@ public class Launchpad extends JavaPlugin {
                     if (multiplier == -1)
                         continue; // Skip invalid blocks
 
-                    getLogger().info("Relative: " + x + ", " + y + ", " + z);
-                    getLogger().info("World: " + fromBlock.getLocation().toVector().toString());
-
                     Vector directionVector = toBlock.getLocation().toVector()
                             .subtract(fromBlock.getLocation().toVector());
 
-                    getLogger().info("> direction: " + directionVector);
                     Vector addVector = directionVector.normalize().multiply(multiplier);
-
                     // Each block contributes its direction * its material
                     // multiplier, plus incrementing the block count
                     launchVector.add(addVector);
-                    getLogger().info("> added " + addVector);
                     blockCount += 1;
                 }
             }
@@ -182,14 +168,17 @@ public class Launchpad extends JavaPlugin {
 
         double blockCountFactor = this.getBlockCountFactor();
 
-        getLogger().info("> vector before multiplying by " + blockCount + "^" + blockCountFactor + ": " + launchVector);
+        getLogger().info("> vector from materials & positions: " + launchVector);
+        getLogger().info("> magnitude from block count factor (" + blockCount + "^" + blockCountFactor + "): "
+                + Math.pow(blockCount, blockCountFactor));
 
         // Increase final launch vector by a factor relating to the number of
         // blocks in the structure
         launchVector.multiply(Math.pow(blockCount, blockCountFactor));
-        if (launchVector.lengthSquared() > 1_000_000) {
-            // Cap the launch vector magnitude at 1000. TODO: get cap from config
-            launchVector = launchVector.clone().normalize().multiply(1000);
+        double maxLaunchSpeed = this.getMaxLaunchSpeed();
+        if (launchVector.length() > maxLaunchSpeed) {
+            // Cap the launch vector magnitude
+            launchVector = launchVector.clone().normalize().multiply(maxLaunchSpeed);
             getLogger().info("> capped launch vector: " + launchVector);
         }
         return launchVector;
@@ -197,22 +186,18 @@ public class Launchpad extends JavaPlugin {
 
     public void launchPlayer(Player player, Vector launchVector) {
         player.sendMessage("Launching " + launchVector);
-        player.setGravity(false);
-        player.setVelocity(launchVector);
+        Pig pig = player.getWorld().spawn(player.getLocation(), Pig.class);
+        pig.setAware(false);
+        pig.setLootTable(null);
+        pig.setInvisible(true);
+        pig.setSilent(true);
+        pig.setFallDistance(100);
+        // TODO: pig doesn't die if it hits the slime block
+        // pig.setMetadata("isLaunchPig", new FixedMetadataValue(this, true));
+        pig.addPassenger(player);
+        pig.setVelocity(launchVector);
 
         // Set time that this player was launched (for launch cooldown)
         playersLastLaunched.put(player.getUniqueId(), System.currentTimeMillis());
-
-        // Schedule re-enabling gravity
-        BukkitRunnable reEnableGravity = new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.setGravity(true);
-            }
-        };
-
-        // x seconds * 20 ticks per second = ticks
-        int delay = (int) (this.getZeroGravityDuration() * 20);
-        reEnableGravity.runTaskLater(this, delay);
     }
 }
